@@ -4,6 +4,9 @@
 ![Selenium](https://img.shields.io/badge/Selenium-WebDriver-green)
 ![Automation](https://img.shields.io/badge/Type-Automation-orange)
 
+![demo](https://github.com/user-attachments/assets/1a825cef-7b2e-4bce-b578-6dbbd6a78fa2)
+
+
 A CLI tool built with `Python` and `Selenium` to automate class bookings on the [App Brewery Gym](https://appbrewery.github.io/gym/) test site.
 
 While designed for this demo, its architecture can be easily adapted for other reservation systems.
