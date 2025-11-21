@@ -158,81 +158,95 @@ def check_my_bookings(target_class_name):
 
 # --- MAIN LOOP ---
 
-# Login
-retry(login, description="Login")
 
-while True:
-    # Reset location to Schedule Page
-    ensure_on_schedule_page()
 
-    # Show Days
-    days = get_available_days()
+def main():
+    """
+    Main execution loop.
+    """
 
-    user_input = input("\nSelect a day # (or 'q' to quit): ").lower()
-    if user_input == 'q':
-        print("Goodbye!")
-        break
+    # Login
+    retry(login, description="Login")
 
-    # Validate Day Input
-    selected_day = None
-    try:
-        day_idx = int(user_input)
-        if day_idx in days:
-            selected_day = days[day_idx]
-        else:
-            print("⚠ Invalid day number.")
-            continue  # Restart loop
-    except ValueError:
-        print("⚠ Please enter a number or 'q'.")
-        continue
+    while True:
+        # Reset location to Schedule Page
+        ensure_on_schedule_page()
 
-    # Show Classes for that Day
-    print(f"\nViewing: {selected_day['title']}")
-    classes = get_classes_for_day(selected_day['element'])
+        # Show Days
+        days = get_available_days()
 
-    if not classes:
-        print("No classes found.")
-        continue
+        user_input = input("\nSelect a day # (or 'q' to quit): ").lower()
+        if user_input == 'q':
+            print("Goodbye!")
+            break
 
-    # Select Class
-    class_input = input("\nSelect class # to book/waitlist (or 'b' to go back): ").lower()
-    if class_input == 'b':
-        continue
-
-    target_class = None
-    try:
-        class_idx = int(class_input)
-        if class_idx in classes:
-            target_class = classes[class_idx]
-        else:
-            print("⚠ Invalid class number.")
-            continue
-    except ValueError:
-        print("⚠ Invalid input.")
-        continue
-
-    # Start Booking
-    btn = target_class['button']
-    status = target_class['status']
-
-    if status in ["Booked", "Waitlisted", "Full"]:
-        print(f"⚠ Cannot action this class. Status is: {status}")
-        time.sleep(1.5)
-    else:
-        print(f"Attempting to: {status}...")
-        btn.click()
-
-        # Wait for button status to change
+        # Validate Day Input
+        selected_day = None
         try:
-            wait.until(lambda d: btn.text in ["Booked", "Waitlisted"])
-            print(f"✅ Success! Status changed to: {btn.text}")
+            day_idx = int(user_input)
+            if day_idx in days:
+                selected_day = days[day_idx]
+            else:
+                print("⚠ Invalid day number.")
+                continue  # Restart loop
+        except ValueError:
+            print("⚠ Please enter a number or 'q'.")
+            continue
 
-            # Verify (only if action was taken)
-            retry(lambda: check_my_bookings(target_class['name']), description="Verification")
+        # Show Classes for that Day
+        print(f"\nViewing: {selected_day['title']}")
+        classes = get_classes_for_day(selected_day['element'])
 
-            input("\nPress Enter to continue booking...")
+        if not classes:
+            print("No classes found.")
+            continue
 
-        except TimeoutException:
-            print("❌ Timeout: Status didn't update.")
+        # Select Class
+        class_input = input("\nSelect class # to book/waitlist (or 'b' to go back): ").lower()
+        if class_input == 'b':
+            continue
 
-driver.quit()
+        target_class = None
+        try:
+            class_idx = int(class_input)
+            if class_idx in classes:
+                target_class = classes[class_idx]
+            else:
+                print("⚠ Invalid class number.")
+                continue
+        except ValueError:
+            print("⚠ Invalid input.")
+            continue
+
+        # Start Booking
+        btn = target_class['button']
+        status = target_class['status']
+
+        if status in ["Booked", "Waitlisted", "Full"]:
+            print(f"⚠ Cannot action this class. Status is: {status}")
+            time.sleep(1.5)
+        else:
+            print(f"Attempting to: {status}...")
+            btn.click()
+
+            # Wait for button status to change
+            try:
+                wait.until(lambda d: btn.text in ["Booked", "Waitlisted"])
+                print(f"✅ Success! Status changed to: {btn.text}")
+
+                # Verify (only if action was taken)
+                retry(lambda: check_my_bookings(target_class['name']), description="Verification")
+
+                input("\nPress Enter to continue booking...")
+
+            except TimeoutException:
+                print("❌ Timeout: Status didn't update.")
+
+    driver.quit()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nForce quitting...")
+        driver.quit()
